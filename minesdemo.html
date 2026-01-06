@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Mines</title>
+    <link rel="icon" type="image/x-icon" href="wincart.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1a2947 50%, #0a1128 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            background-image: url('bg.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .stat-value {
+            color: #4ade80;
+            font-weight: bold;
+            font-size: 1.125rem;
+            margin-left: 0.5rem;
+        }
+
+        .stat-value.negative {
+            color: #ef4444;
+        }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .control-panel {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(51, 65, 85, 0.5);
+        }
+
+        .panel-logo {
+            max-width: 250px;
+            width: 100%;
+            height: auto;
+            margin: 0 auto 1.5rem;
+            display: block;
+            filter: drop-shadow(0 0 15px rgba(74, 222, 128, 0.3));
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #4ade80;
+            margin-bottom: 1rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-label {
+            display: block;
+            color: #d1d5db;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-field {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .input-field:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            background: #334155;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #22c55e;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #22c55e;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+
+        .info-box {
+            background: #1e293b;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            color: #9ca3af;
+        }
+
+        .info-value {
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .btn-start {
+            background: linear-gradient(to right, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .btn-cashout {
+            background: linear-gradient(to right, #eab308, #ca8a04);
+            color: white;
+        }
+
+        .btn-cashout:disabled {
+            background: linear-gradient(to right, #4b5563, #374151);
+        }
+
+        .bet-adjust-btn {
+            background: #334155;
+            border: 1px solid #475569;
+            color: #4ade80;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 50px;
+        }
+
+        .bet-adjust-btn:hover:not(:disabled) {
+            background: #475569;
+            transform: scale(1.05);
+        }
+
+        .bet-adjust-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .music-control-top {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid #475569;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .music-control-top:hover {
+            background: rgba(51, 65, 85, 0.95);
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .music-control-top i {
+            font-size: 24px;
+            color: #4ade80;
+            transition: all 0.3s ease;
+        }
+
+        .music-control-top.muted i {
+            color: #ef4444;
+        }
+
+        /* Updated Win Animation Styles */
+        .win-animation-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+            background: rgba(0, 0, 0, 0.85);
+        }
+
+        .win-animation-overlay.active {
+            display: flex;
+        }
+
+        .win-content {
+            text-align: center;
+            z-index: 1002;
+        }
+
+        .bigwin-image {
+            max-width: 400px;
+            width: 90%;
+            height: auto;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.8));
+            animation: pulseGlow 0.5s ease-in-out infinite alternate;
+        }
+
+        .win-image {
+            max-width: 300px;
+            width: 80%;
+            height: auto;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 0 15px rgba(74, 222, 128, 0.8));
+            animation: pulse 0.5s ease-in-out infinite alternate;
+        }
+
+        .win-amount-display {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #4ade80;
+            text-shadow: 0 0 25px rgba(74, 222, 128, 0.9);
+            animation: pulseGlow 0.5s ease-in-out infinite alternate;
+            margin-bottom: 1rem;
+        }
+
+        .big-win-amount {
+            font-size: 5rem;
+            color: #fbbf24;
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.9);
+        }
+
+        .win-label {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #fbbf24;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
+            margin-bottom: 1.5rem;
+        }
+
+        .regular-win-label {
+            font-size: 2.5rem;
+            color: #22c55e;
+            text-shadow: 0 0 15px rgba(34, 197, 94, 0.8);
+        }
+
+        .falling-diamond {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            animation: diamondFall 1s ease-in forwards;
+            filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.6));
+            z-index: 1001;
+        }
+
+        .falling-coin {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            animation: coinFall 1s ease-in forwards;
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.6));
+            z-index: 1001;
+        }
+
+        @keyframes cartSlideIn {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes diamondFall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(var(--fall-distance)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes coinFall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(var(--fall-distance)) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulseGlow {
+            from {
+                transform: scale(1);
+                filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.8));
+            }
+            to {
+                transform: scale(1.05);
+                filter: drop-shadow(0 0 30px rgba(251, 191, 36, 1));
+            }
+        }
+
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+                filter: drop-shadow(0 0 15px rgba(74, 222, 128, 0.8));
+            }
+            to {
+                transform: scale(1.03);
+                filter: drop-shadow(0 0 20px rgba(74, 222, 128, 1));
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .game-grid-container {
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            position: relative;
+            overflow: visible;
+        }
+
+        .game-grid {
+            display: grid;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            border: 2px solid #475569;
+            border-radius: 0.5rem;
+            background: linear-gradient(to bottom right, #475569, #334155);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: visible;
+        }
+
+        .cell:hover:not(.revealed):not(:disabled) {
+            border-color: rgba(34, 197, 94, 0.5);
+            background: linear-gradient(to bottom right, #5b6b82, #3d4b5f);
+            transform: scale(0.95);
+        }
+
+        .cell:disabled {
+            cursor: not-allowed;
+        }
+
+        .cell.revealed.safe {
+            background: linear-gradient(to bottom right, #16a34a, #15803d);
+            border-color: #22c55e;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .cell.revealed.mine {
+            background: linear-gradient(to bottom right, #b91c1c, #7f1d1d);
+            border-color: #ef4444;
+        }
+
+        .cell img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+        }
+
+        .cell .explosion {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200%;
+            height: 200%;
+            object-fit: contain;
+            z-index: 1000;
+            pointer-events: none;
+            animation: explode 1.2s ease-out forwards;
+        }
+
+        .cell .bomb-static {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            z-index: 1;
+        }
+
+        .cell .bomb-static.glowing {
+            animation: bombGlow 0.5s ease-in-out;
+        }
+
+        .cell .lost-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3);
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            60% {
+                transform: translate(-50%, -50%) scale(3);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(3.5);
+                opacity: 0;
+            }
+        }
+
+        @keyframes bombGlow {
+            0%, 100% {
+                filter: drop-shadow(0 0 0px rgba(239, 68, 68, 0));
+            }
+            50% {
+                filter: drop-shadow(0 0 20px rgba(239, 68, 68, 1)) drop-shadow(0 0 40px rgba(239, 68, 68, 0.8));
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .panel-logo {
+                max-width: 200px;
+            }
+            
+            .music-control-top {
+                top: 10px;
+                right: 10px;
+                width: 50px;
+                height: 50px;
+            }
+            
+            .music-control-top i {
+                font-size: 20px;
+            }
+            
+            .bigwin-image {
+                max-width: 300px;
+            }
+            
+            .win-image {
+                max-width: 250px;
+            }
+            
+            .win-amount-display {
+                font-size: 3rem;
+            }
+            
+            .big-win-amount {
+                font-size: 4rem;
+            }
+            
+            .win-label {
+                font-size: 2.5rem;
+            }
+            
+            .regular-win-label {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .panel-logo {
+                max-width: 150px;
+            }
+
+            .stats-container {
+                gap: 1rem;
+            }
+
+            .game-grid {
+                gap: 0.25rem;
+            }
+            
+            .music-control-top {
+                top: 5px;
+                right: 5px;
+                width: 45px;
+                height: 45px;
+            }
+            
+            .music-control-top i {
+                font-size: 18px;
+            }
+            
+            .bigwin-image {
+                max-width: 250px;
+            }
+            
+            .win-image {
+                max-width: 200px;
+            }
+            
+            .win-amount-display {
+                font-size: 2.5rem;
+            }
+            
+            .big-win-amount {
+                font-size: 3rem;
+            }
+            
+            .win-label {
+                font-size: 2rem;
+            }
+            
+            .regular-win-label {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-overlay"></div>
+    
+    <audio id="backgroundMusic1" loop>
+        <source src="gamemusicloop.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="backgroundMusic2" loop>
+        <source src="musicloop.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="fieldClickSound">
+        <source src="fieldclick.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="explosionSound">
+        <source src="explosion.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="winSound">
+        <source src="win.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="music-control-top" id="musicControlTop">
+        <i class="fas fa-volume-up"></i>
+    </div>
+    
+    <!-- Updated Win Animation Overlay -->
+    <div class="win-animation-overlay" id="winOverlay">
+        <div class="win-content">
+            <!-- Big win image will be shown for big wins -->
+            <img id="bigWinImage" src="bigwin.png" alt="BIG WIN" class="bigwin-image" style="display: none;">
+            <!-- Regular win image will be shown for regular wins -->
+            <img id="regularWinImage" src="mineslogo.png" alt="WIN" class="win-image" style="display: none;">
+            <div class="win-label" id="winLabel">WIN!</div>
+            <div class="win-amount-display" id="winAmountDisplay">$0.00</div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="stats-container">
+            <div class="stat-box">
+                <span class="stat-label">Balance:</span>
+                <span class="stat-value" id="balance">$1000.00</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Profit:</span>
+                <span class="stat-value" id="profit">$0.00</span>
+            </div>
+        </div>
+
+        <div class="game-layout">
+            <div class="control-panel">
+                <img src="mineslogo.png" alt="Money Mines Logo" class="panel-logo">
+                
+                <div class="input-group">
+                    <label class="input-label">Bet Amount</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button class="bet-adjust-btn" id="halfBetBtn" type="button">½</button>
+                        <input type="number" id="betAmount" class="input-field" value="1.00" step="0.10" min="0.10" style="flex: 1;">
+                        <button class="bet-adjust-btn" id="doubleBetBtn" type="button">2×</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Number of Mines: <span id="minesDisplay">5</span></label>
+                    <input type="range" id="minesCount" class="slider" value="5" min="1" max="24">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Grid Size: <span id="gridDisplay">5x5</span></label>
+                    <input type="range" id="gridSize" class="slider" value="5" min="3" max="6">
+                </div>
+
+                <div class="info-box">
+                    <div class="info-row">
+                        <span class="info-label">Multiplier:</span>
+                        <span class="info-value" id="multiplier">1.00x</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Revealed:</span>
+                        <span class="info-value" style="color: white;" id="revealed">0/20</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-start" id="startBtn">PLACE BET</button>
+                <button class="btn btn-cashout" id="cashoutBtn" style="display: none; margin-top: 0.5rem;">CASH OUT $1.00</button>
+            </div>
+
+            <div class="game-grid-container">
+                <div class="game-grid" id="gameGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let balance = 1000.00;
+        let betAmount = 1.00;
+        let gridSize = 5;
+        let minesCount = 5;
+        let gameActive = false;
+        let revealedCells = [];
+        let minePositions = [];
+        let multiplier = 1.00;
+        let profit = 0.00;
+        let explodedCell = null;
+        let isExploding = false;
+        
+        const backgroundMusic1 = document.getElementById('backgroundMusic1');
+        const backgroundMusic2 = document.getElementById('backgroundMusic2');
+        const fieldClickSound = document.getElementById('fieldClickSound');
+        const explosionSound = document.getElementById('explosionSound');
+        const winSound = document.getElementById('winSound');
+        const musicControlTop = document.getElementById('musicControlTop');
+        
+        let soundsEnabled = true;
+        let backgroundMusicStarted = false;
+
+        const elements = {
+            balance: document.getElementById('balance'),
+            profit: document.getElementById('profit'),
+            betAmount: document.getElementById('betAmount'),
+            minesCount: document.getElementById('minesCount'),
+            gridSize: document.getElementById('gridSize'),
+            minesDisplay: document.getElementById('minesDisplay'),
+            gridDisplay: document.getElementById('gridDisplay'),
+            multiplier: document.getElementById('multiplier'),
+            revealed: document.getElementById('revealed'),
+            startBtn: document.getElementById('startBtn'),
+            cashoutBtn: document.getElementById('cashoutBtn'),
+            gameGrid: document.getElementById('gameGrid'),
+            halfBetBtn: document.getElementById('halfBetBtn'),
+            doubleBetBtn: document.getElementById('doubleBetBtn'),
+            winOverlay: document.getElementById('winOverlay'),
+            winLabel: document.getElementById('winLabel'),
+            winAmountDisplay: document.getElementById('winAmountDisplay'),
+            bigWinImage: document.getElementById('bigWinImage'),
+            regularWinImage: document.getElementById('regularWinImage')
+        };
+
+        function initializeAudio() {
+            backgroundMusic1.volume = 0.8;
+            backgroundMusic2.volume = 0.8;
+            fieldClickSound.volume = 0.5;
+            explosionSound.volume = 0.6;
+            winSound.volume = 0.5;
+            
+            backgroundMusic1.load();
+            backgroundMusic2.load();
+            fieldClickSound.load();
+            explosionSound.load();
+            winSound.load();
+        }
+
+        function startBackgroundMusic() {
+            if (!backgroundMusicStarted) {
+                Promise.all([
+                    backgroundMusic1.play(),
+                    backgroundMusic2.play()
+                ]).then(() => {
+                    backgroundMusicStarted = true;
+                    musicControlTop.classList.remove('muted');
+                }).catch(e => {
+                    backgroundMusic1.play().then(() => {
+                        backgroundMusic2.play().then(() => {
+                            backgroundMusicStarted = true;
+                            musicControlTop.classList.remove('muted');
+                        });
+                    }).catch(e2 => {
+                    });
+                });
+            }
+        }
+
+        function playSound(soundElement) {
+            if (!soundsEnabled) return;
+            
+            try {
+                if (soundElement === backgroundMusic1 || soundElement === backgroundMusic2) {
+                    return;
+                }
+                
+                soundElement.currentTime = 0;
+                const playPromise = soundElement.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                    });
+                }
+            } catch (e) {
+            }
+        }
+
+        musicControlTop.addEventListener('click', () => {
+            if (!backgroundMusic2.paused) {
+                backgroundMusic2.pause();
+                musicControlTop.classList.add('muted');
+                musicControlTop.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else {
+                backgroundMusic2.play().then(() => {
+                    musicControlTop.classList.remove('muted');
+                    musicControlTop.innerHTML = '<i class="fas fa-volume-up"></i>';
+                }).catch(e => {
+                    console.log("error", e);
+                });
+            }
+        });
+
+        document.addEventListener('click', startBackgroundMusic);
+        document.addEventListener('keydown', startBackgroundMusic);
+        document.addEventListener('touchstart', startBackgroundMusic);
+
+        function updateDisplay() {
+            elements.balance.textContent = `$${balance.toFixed(2)}`;
+            elements.profit.textContent = `$${profit.toFixed(2)}`;
+            elements.profit.classList.toggle('negative', profit < 0);
+            elements.multiplier.textContent = `${multiplier.toFixed(2)}x`;
+            
+            const totalCells = gridSize * gridSize;
+            const safeCells = totalCells - minesCount;
+            elements.revealed.textContent = `${revealedCells.length}/${safeCells}`;
+            
+            if (gameActive) {
+                elements.cashoutBtn.textContent = `CASH OUT $${(betAmount * multiplier).toFixed(2)}`;
+            }
+            
+            elements.cashoutBtn.disabled = !gameActive || revealedCells.length < 2 || isExploding;
+        }
+
+        function generateMinePositions() {
+            const totalCells = gridSize * gridSize;
+            const positions = new Set();
+            while (positions.size < minesCount) {
+                positions.add(Math.floor(Math.random() * totalCells));
+            }
+            return Array.from(positions);
+        }
+
+        function getHouseEdge(mines) {
+            if (mines <= 2) return 0.08;
+            if (mines <= 4) return 0.05;
+            return 0.025;
+        }
+
+        function calculateMultiplier(revealed) {
+            if (revealed === 0) return 1.0;
+            if (revealed === 1) return 1.0;
+
+            const totalCells = gridSize * gridSize;
+            const safeCells = totalCells - minesCount;
+            const houseEdge = getHouseEdge(minesCount);
+
+            let probability = 1.0;
+            for (let i = 0; i < revealed; i++) {
+                probability *= (safeCells - i) / (totalCells - i);
+            }
+
+            const fairMultiplier = 1 / probability;
+            const casinoMultiplier = fairMultiplier * (1 - houseEdge);
+
+            return Math.max(1.0, Number(casinoMultiplier.toFixed(2)));
+        }
+
+        function createGrid() {
+            const totalCells = gridSize * gridSize;
+            elements.gameGrid.style.gridTemplateColumns = `repeat(${gridSize}, minmax(0, 1fr))`;
+            elements.gameGrid.innerHTML = '';
+
+            for (let i = 0; i < totalCells; i++) {
+                const cell = document.createElement('button');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                cell.onclick = () => handleCellClick(i);
+                elements.gameGrid.appendChild(cell);
+            }
+        }
+
+        function showWinAnimation(winAmount, profitAmount) {
+            const isBigWin = profitAmount >= betAmount * 5;
+            
+            playSound(winSound);
+            
+            // Clear any existing images first
+            elements.bigWinImage.style.display = 'none';
+            elements.regularWinImage.style.display = 'none';
+            
+            if (isBigWin) {
+                // Show BIG WIN animation
+                elements.bigWinImage.style.display = 'block';
+                elements.winLabel.textContent = 'BIG WIN!';
+                elements.winLabel.className = 'win-label';
+                elements.winAmountDisplay.textContent = `$${winAmount.toFixed(2)}`;
+                elements.winAmountDisplay.className = 'win-amount-display big-win-amount';
+            } else {
+                // Show regular WIN animation
+                elements.regularWinImage.style.display = 'block';
+                elements.winLabel.textContent = 'WIN!';
+                elements.winLabel.className = 'win-label regular-win-label';
+                elements.winAmountDisplay.textContent = `$${winAmount.toFixed(2)}`;
+                elements.winAmountDisplay.className = 'win-amount-display';
+            }
+            
+            // Show the overlay
+            elements.winOverlay.classList.add('active');
+            
+            // Create falling diamonds/coins based on win size
+            const diamondCount = isBigWin ? 30 : 15;
+            const coinCount = isBigWin ? 20 : 10;
+            
+            // Create falling diamonds
+            for (let i = 0; i < diamondCount; i++) {
+                const diamond = document.createElement('img');
+                diamond.src = 'diamondtrspnt.png';
+                diamond.className = 'falling-diamond';
+                diamond.style.left = `${Math.random() * 100}%`;
+                diamond.style.setProperty('--fall-distance', `${200 + Math.random() * 100}px`);
+                diamond.style.animationDelay = `${Math.random() * 0.5}s`;
+                elements.winOverlay.appendChild(diamond);
+                
+                setTimeout(() => {
+                    if (diamond.parentNode) {
+                        diamond.remove();
+                    }
+                }, 1000);
+            }
+            
+            // Create falling coins
+            for (let i = 0; i < coinCount; i++) {
+                const coin = document.createElement('img');
+                coin.src = 'diamondtrspnt.png';
+                coin.className = 'falling-coin';
+                coin.style.left = `${Math.random() * 100}%`;
+                coin.style.setProperty('--fall-distance', `${150 + Math.random() * 100}px`);
+                coin.style.animationDelay = `${Math.random() * 0.3}s`;
+                elements.winOverlay.appendChild(coin);
+                
+                setTimeout(() => {
+                    if (coin.parentNode) {
+                        coin.remove();
+                    }
+                }, 1000);
+            }
+            
+            // Hide overlay after appropriate time
+            const duration = isBigWin ? 4000 : 2500;
+            setTimeout(() => {
+                elements.winOverlay.classList.remove('active');
+                // Clear all falling elements
+                const diamonds = elements.winOverlay.querySelectorAll('.falling-diamond');
+                const coins = elements.winOverlay.querySelectorAll('.falling-coin');
+                diamonds.forEach(d => d.remove());
+                coins.forEach(c => c.remove());
+            }, duration);
+        }
+
+        function handleCellClick(index) {
+            if (!gameActive || revealedCells.includes(index) || isExploding) return;
+
+            playSound(fieldClickSound);
+
+            const cell = document.querySelector(`[data-index="${index}"]`);
+
+            if (minePositions.includes(index)) {
+                explodedCell = index;
+                isExploding = true;
+                cell.classList.add('revealed', 'mine');
+
+                setTimeout(() => {
+                    playSound(explosionSound);
+                }, 200);
+
+                const bombImg = document.createElement('img');
+                bombImg.src = 'bombiconbasic.png';
+                bombImg.alt = 'Bomb';
+                bombImg.className = 'bomb-static glowing';
+                cell.appendChild(bombImg);
+
+                setTimeout(() => {
+                    bombImg.remove();
+
+                    const explosionImg = document.createElement('img');
+                    explosionImg.src = 'explosion.png';
+                    explosionImg.alt = 'Explosion';
+                    explosionImg.className = 'explosion';
+                    cell.appendChild(explosionImg);
+
+                    setTimeout(() => {
+                        explosionImg.remove();
+
+                        const lostImg = document.createElement('img');
+                        lostImg.src = 'lost.png';
+                        lostImg.alt = 'Lost';
+                        lostImg.className = 'lost-text';
+                        lostImg.style.width = '100%';
+                        lostImg.style.height = '100%';
+                        lostImg.style.objectFit = 'contain';
+                        cell.appendChild(lostImg);
+                    }, 1200);
+                }, 500);
+
+                setTimeout(() => {
+                    gameActive = false;
+                    revealAllMines();
+                    profit = -betAmount;
+                    updateDisplay();
+                    elements.startBtn.style.display = 'block';
+                    elements.cashoutBtn.style.display = 'none';
+                    elements.betAmount.disabled = false;
+                    elements.minesCount.disabled = false;
+                    elements.gridSize.disabled = false;
+                    isExploding = false;
+                }, 1800);
+            } else {
+                revealedCells.push(index);
+                cell.classList.add('revealed', 'safe');
+                cell.disabled = true;
+                
+                const img = document.createElement('img');
+                img.src = 'diamondtrspnt.png';
+                img.alt = 'Diamond';
+                cell.appendChild(img);
+
+                multiplier = calculateMultiplier(revealedCells.length);
+                profit = (betAmount * multiplier) - betAmount;
+                updateDisplay();
+
+                const totalCells = gridSize * gridSize;
+                const safeCells = totalCells - minesCount;
+                if (revealedCells.length === safeCells) {
+                    setTimeout(() => {
+                        const winAmount = betAmount * multiplier;
+                        const profitAmount = winAmount - betAmount;
+                        balance += winAmount;
+                        profit = profitAmount;
+
+                        if (profitAmount > 0) {
+                            showWinAnimation(winAmount, profitAmount);
+                        }
+                        
+                        gameActive = false;
+                        revealAllMines();
+                        updateDisplay();
+                        elements.startBtn.style.display = 'block';
+                        elements.cashoutBtn.style.display = 'none';
+                        elements.betAmount.disabled = false;
+                        elements.minesCount.disabled = false;
+                        elements.gridSize.disabled = false;
+                    }, 300);
+                }
+            }
+        }
+
+        function revealAllMines() {
+            minePositions.forEach(pos => {
+                if (pos !== explodedCell) {
+                    const cell = document.querySelector(`[data-index="${pos}"]`);
+                    cell.classList.add('revealed', 'mine');
+                    const img = document.createElement('img');
+                    img.src = 'bombiconbasic.png';
+                    img.alt = 'Bomb';
+                    cell.appendChild(img);
+                }
+            });
+        }
+
+        function startGame() {
+            betAmount = parseFloat(elements.betAmount.value) || 1.00;
+            
+            if (betAmount <= 0) {
+                alert('Bet amount must be greater than 0!');
+                return;
+            }
+            
+            if (balance < betAmount) {
+                alert('Insufficient balance!');
+                return;
+            }
+
+            balance -= betAmount;
+            gameActive = true;
+            revealedCells = [];
+            minePositions = generateMinePositions();
+            multiplier = 1.00;
+            profit = 0.00;
+            explodedCell = null;
+            isExploding = false;
+
+            createGrid();
+            updateDisplay();
+
+            elements.betAmount.disabled = true;
+            elements.minesCount.disabled = true;
+            elements.gridSize.disabled = true;
+            elements.startBtn.style.display = 'none';
+            elements.cashoutBtn.style.display = 'block';
+            elements.cashoutBtn.disabled = true;
+        }
+
+        function cashOut() {
+            if (!gameActive || revealedCells.length === 0 || isExploding) return;
+
+            const winAmount = betAmount * multiplier;
+            const profitAmount = winAmount - betAmount;
+            balance += winAmount;
+            profit = profitAmount;
+            gameActive = false;
+            revealAllMines();
+
+            if (profitAmount > 0) {
+                showWinAnimation(winAmount, profitAmount);
+            }
+            
+            updateDisplay();
+            elements.betAmount.disabled = false;
+            elements.minesCount.disabled = false;
+            elements.gridSize.disabled = false;
+            elements.startBtn.style.display = 'block';
+            elements.cashoutBtn.style.display = 'none';
+        }
+
+        function adjustBet(multiplier) {
+            if (gameActive) {
+                alert('Cannot adjust bet during active game!');
+                return;
+            }
+            
+            let newBet = parseFloat(elements.betAmount.value) * multiplier;
+
+            if (newBet < 0.10) {
+                newBet = 0.10;
+            }
+
+            if (newBet > balance) {
+                newBet = balance;
+                alert('Bet amount cannot exceed your balance!');
+            }
+            
+            elements.betAmount.value = newBet.toFixed(2);
+        }
+
+        function updateGridConstraints() {
+            const totalCells = gridSize * gridSize;
+            const maxMines = Math.min(totalCells - 1, 24);
+
+            elements.minesCount.max = maxMines;
+
+            if (minesCount > maxMines) {
+                minesCount = maxMines;
+                elements.minesCount.value = minesCount;
+                elements.minesDisplay.textContent = minesCount;
+            }
+        }
+
+        elements.startBtn.onclick = startGame;
+        elements.cashoutBtn.onclick = cashOut;
+
+        elements.halfBetBtn.onclick = () => adjustBet(0.5);
+        elements.doubleBetBtn.onclick = () => adjustBet(2);
+
+        elements.minesCount.oninput = (e) => {
+            minesCount = parseInt(e.target.value);
+            elements.minesDisplay.textContent = minesCount;
+            updateDisplay();
+        };
+
+        elements.gridSize.oninput = (e) => {
+            gridSize = parseInt(e.target.value);
+            elements.gridDisplay.textContent = `${gridSize}x${gridSize}`;
+            updateGridConstraints();
+            createGrid();
+            updateDisplay();
+        };
+
+        elements.betAmount.oninput = () => {
+            let value = parseFloat(elements.betAmount.value);
+            if (value < 0.10) {
+                elements.betAmount.value = "0.10";
+            } else if (value > balance) {
+                elements.betAmount.value = balance.toFixed(2);
+            }
+        };
+
+        updateGridConstraints();
+        createGrid();
+        updateDisplay();
+        initializeAudio();
+
+        setTimeout(() => {
+            startBackgroundMusic();
+        }, 1000);
+    </script>
+</body>
+</html>
